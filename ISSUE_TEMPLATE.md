@@ -7,10 +7,9 @@ OS:
 What you did:
 What happened:
 What you expected:
-
 Logs:
 ```
-INSERT PASTE LOGS HERE
+PASTE LOGS HERE
 ```
 
 
