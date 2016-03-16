@@ -5,6 +5,15 @@ if [[ $UID -ne 0 ]]; then
 	exit 0
 fi
 
+if [[ $(cat /etc/issue) =~ Debian ]]; then
+	distro=debian
+elif [[ $(cat /etc/issue) =~ Ubuntu ]]; then
+	distro=ubuntu
+else
+	echo "This script will only work on Debian and Ubuntu Distros, but you are using $(cat /etc/issue)"
+	exit 0
+fi
+
 set -x
 
 apt-get update
@@ -20,33 +29,55 @@ fi
 mkdir /opt/sickrage && chown sickrage:sickrage /opt/sickrage
 su -u sickrage git clone https://github.com/SickRage/SickRage.git /opt/sickrage
 
-if [[ $(/sbin/init --version) =~ upstart ]]; then
+if [[ $distro = ubuntu ]]; then
+	if [[ $(/sbin/init --version) =~ upstart ]]; then
 
-    cp -v /opt/sickrage/runscripts/init.upstart /etc/init/sickrage.conf
-	
-	chown root:root /etc/init/sickrage.conf
-    chmod 644 /etc/init/sickrage.conf
-    
-    service sickrage start
-	
-elif [[ $(systemctl) =~ -\.mount ]]; then
-	
-	cp -v /opt/sickrage/runscripts/init.systemd /etc/systemd/system/sickrage.service
+		cp -v /opt/sickrage/runscripts/init.upstart /etc/init/sickrage.conf
+		
+		chown root:root /etc/init/sickrage.conf
+		chmod 644 /etc/init/sickrage.conf
+		
+		service sickrage start
+		
+	elif [[ $(systemctl) =~ -\.mount ]]; then
+		
+		cp -v /opt/sickrage/runscripts/init.systemd /etc/systemd/system/sickrage.service
 
-	chown root:root /etc/systemd/system/sickrage.service
-	chmod 644 /etc/systemd/system/sickrage.service
+		chown root:root /etc/systemd/system/sickrage.service
+		chmod 644 /etc/systemd/system/sickrage.service
 
-	systemctl enable sickrage
-	systemctl start sickrage
-	systemctl status sickrage
-else
-    cp -v /opt/sickrage/runscripts/init.ubuntu /etc/init.d/sickrage
-    
-    chown root:root /etc/init.d/sickrage
-    chmod 644 /etc/init.d/sickrage
-    
-    update-rc.d sickrage defaults
-	service sickrage start
+		systemctl enable sickrage
+		systemctl start sickrage
+		systemctl status sickrage
+	else
+		cp -v /opt/sickrage/runscripts/init.ubuntu /etc/init.d/sickrage
+		
+		chown root:root /etc/init.d/sickrage
+		chmod 644 /etc/init.d/sickrage
+		
+		update-rc.d sickrage defaults
+		service sickrage start
+	fi
+elif [[ $distro = debian ]]; then
+	if [[ $(systemctl) =~ -\.mount ]]; then
+		
+		cp -v /opt/sickrage/runscripts/init.systemd /etc/systemd/system/sickrage.service
+
+		chown root:root /etc/systemd/system/sickrage.service
+		chmod 644 /etc/systemd/system/sickrage.service
+
+		systemctl enable sickrage
+		systemctl start sickrage
+		systemctl status sickrage
+	else
+		cp -v /opt/sickrage/runscripts/init.debian /etc/init.d/sickrage
+		
+		chown root:root /etc/init.d/sickrage
+		chmod 644 /etc/init.d/sickrage
+		
+		update-rc.d sickrage defaults
+		service sickrage start
+	fi
 fi
 set +x
 
