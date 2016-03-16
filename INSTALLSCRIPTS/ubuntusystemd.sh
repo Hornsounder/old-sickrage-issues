@@ -10,8 +10,12 @@ set -x
 apt-get update
 apt-get install unrar-free git-core openssl libssl-dev python2.7 -y
 
-addgroup --system sickrage
-adduser --disabled-password --system --home /var/lib/sickrage --gecos "SickRage" --ingroup sickrage sickrage
+if [ -z "$(getent group sickrage)" ]; then
+	addgroup --system sickrage
+fi
+if [ -z "$(getent passwd sickrage)" ]; then
+	adduser --disabled-password --system --home /var/lib/sickrage --gecos "SickRage" --ingroup sickrage sickrage
+fi
 
 mkdir /opt/sickrage && chown sickrage:sickrage /opt/sickrage
 su -u sickrage git clone https://github.com/SickRage/SickRage.git /opt/sickrage
@@ -28,3 +32,4 @@ systemctl status sickrage
 set +x
 
 echo "Check that everything has been set up correctly by going to http://yourserverip.com/8081"
+echo "make sure to add sickrage to your download clients group"
