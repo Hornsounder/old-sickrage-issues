@@ -19,15 +19,20 @@ set -x
 apt-get update
 apt-get install unrar-free git-core openssl libssl-dev python2.7 -y
 
-if [[ -z "$(getent group sickrage)" ]]; then
+if [[ ! "$(getent group sickrage)" ]]; then
 	addgroup --system sickrage
 fi
-if [[ -z "$(getent passwd sickrage)" ]]; then
+if [[ ! "$(getent passwd sickrage)" ]]; then
 	adduser --disabled-password --system --home /var/lib/sickrage --gecos "SickRage" --ingroup sickrage sickrage
 fi
 
-mkdir /opt/sickrage && chown sickrage:sickrage /opt/sickrage
-su -u sickrage git clone https://github.com/SickRage/SickRage.git /opt/sickrage
+if [[ ! -d /opt/sickrage ]]; then
+	mkdir /opt/sickrage && chown sickrage:sickrage /opt/sickrage
+else
+	rm -rf /opt/sickrage && mkdir /opt/sickrage && chown sickrage:sickrage /opt/sickrage
+fi
+
+su -c "git clone https://github.com/SickRage/SickRage.git /opt/sickrage" -s /bin/bash sickrage
 
 if [[ $distro = ubuntu ]]; then
 	if [[ $(/sbin/init --version) =~ upstart ]]; then
@@ -81,5 +86,15 @@ elif [[ $distro = debian ]]; then
 fi
 set +x
 
-echo "Check that everything has been set up correctly by going to http://yourserverip.com/8081"
-echo "make sure to add sickrage to your download clients group"
+while [[ ! $extip ]]; do
+	extip=$(curl -s http://checkip.amazonaws.com/)
+done
+
+whiptail --title Complete --msgbox \ "Check that everything has been set up correctly by going to:
+     
+          Internal IP: http://$(ifconfig | grep 'inet addr' | cut -d ':' -f 2 | awk '{ print $1 }' | \
+      grep -E '^(192\.168|10\.|172\.1[6789]\.|172\.2[0-9]\.|172\.3[01]\.)'):8081
+                             OR
+          External IP: http://$extip:8081
+
+ make sure to add sickrage to your download clients group" 15 64
