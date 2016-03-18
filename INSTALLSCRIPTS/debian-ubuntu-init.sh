@@ -30,10 +30,11 @@ apt-get -qq install whiptail -y
 {
 i=1
     while read -r line; do
-		i=$(( $i + 0.5 ))
+		i=$(( $i + 1 ))
         echo $i
     done < <(apt-get update && apt-get install unrar-free git-core openssl libssl-dev whiptail python2.7 -y)
-} | whiptail --title "Progress" --gauge "Installing unrar-free, git-core, openssl, libssl-dev, and python2.7" 8 60 0
+} | whiptail --title "Progress" --gauge "
+   Installing unrar-free, git-core, openssl, libssl-dev, and python2.7" 8 80 0
 
 if [[ ! "$(getent group sickrage)" ]]; then
 	addgroup --system sickrage
